@@ -6,7 +6,6 @@ import (
 	"github.com/twilio/twilio-go"
 )
 
-// TODO: DELETE SOON, ganti zenziva
 func ClientWA() *twilio.RestClient {
 	accSID := os.Getenv("T_ACC_SID")
 	authToken := os.Getenv("T_AUTH_TOKEN")

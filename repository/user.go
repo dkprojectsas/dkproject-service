@@ -161,11 +161,6 @@ func (r *userRepository) GetUsersByParentId(parentId string) ([]entity.User, err
 func (r *userRepository) SendWANotification(user entity.User) (entity.WASendResponse, error) {
 	var cbResp entity.WASendResponse
 
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	return cbResp, err
-	// }
-
 	msgReq := fmt.Sprintf("Selamat bergabung di DK, berikut adalah username dan pin anda. Username : %s, PIN / Password : %s \n\nCatatan: ini adalah data rahasia, mohon dijaga baik baik", user.Username, user.Password)
 
 	reqBody := entity.SendWABody{
@@ -177,7 +172,9 @@ func (r *userRepository) SendWANotification(user entity.User) (entity.WASendResp
 
 	jsonReq, _ := json.Marshal(reqBody)
 
-	req, err := http.NewRequest("POST", "https://console.zenziva.net/wareguler/api/sendWA/", bytes.NewBuffer(jsonReq))
+	waAPI := os.Getenv("ZENZIVA_WA_API")
+
+	req, err := http.NewRequest("POST", waAPI, bytes.NewBuffer(jsonReq))
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 	if err != nil {
 		return cbResp, err
