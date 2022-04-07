@@ -4,6 +4,7 @@ import (
 	"dk-project-service/auth"
 	"dk-project-service/entity"
 	"dk-project-service/repository"
+	"dk-project-service/utils"
 	"errors"
 	"fmt"
 	"log"
@@ -175,7 +176,7 @@ func (s *userService) Register(userAddId int, reg entity.UserRegister) error {
 
 	splitName := strings.Split(createdUser.Fullname, " ")
 
-	createdUser.Username = fmt.Sprintf("DK-%v-%s", createdUser.Id, splitName[0])
+	createdUser.Username = fmt.Sprintf("DK-%v-%s-%s", createdUser.Id, splitName[0], utils.RandNumber(4))
 
 	err = s.userRepo.UpdateUsername(createdUser)
 	if err != nil {
