@@ -76,9 +76,7 @@ func (r *userRepository) GetUserViews(id string) ([]entity.UserView, error) {
 	}
 
 	for _, u := range users {
-		if u.Role == "user" {
-			userViews = append(userViews, u.ToUserView())
-		}
+		userViews = append(userViews, u.ToUserView())
 	}
 
 	return userViews, nil
@@ -172,9 +170,7 @@ func (r *userRepository) SendWANotification(user entity.User) (entity.WASendResp
 
 	jsonReq, _ := json.Marshal(reqBody)
 
-	waAPI := os.Getenv("ZENZIVA_WA_API")
-
-	req, err := http.NewRequest("POST", waAPI, bytes.NewBuffer(jsonReq))
+	req, err := http.NewRequest("POST", "https://console.zenziva.net/wareguler/api/sendWA/", bytes.NewBuffer(jsonReq))
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 	if err != nil {
 		return cbResp, err

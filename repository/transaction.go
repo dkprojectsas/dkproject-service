@@ -14,6 +14,7 @@ type (
 		BulkInsertTrans(trans []entity.TransInput) error
 		GetTransactionById(id int) ([]entity.Transaction, error)
 		GetByCategory(cat string) ([]entity.Transaction, error)
+		GetAllCatForAdmin() ([]entity.Transaction, error)
 	}
 
 	transRepo struct {
@@ -128,6 +129,18 @@ func (r *transRepo) GetByCategory(cat string) ([]entity.Transaction, error) {
 	query := queryBaseTransaction + " WHERE category = ? ORDER BY created_at DESC"
 
 	if err := r.db.Raw(query, cat).Scan(&transactions).Error; err != nil {
+		return transactions, err
+	}
+
+	return transactions, nil
+}
+
+func (r *transRepo) GetAllCatForAdmin() ([]entity.Transaction, error) {
+	var transactions []entity.Transaction
+
+	query := "SELECT * FROM transactions WHERE (from_id = 1 OR to_id = 1) AND category IN ('umum', 'admin_fee') ORDER BY created_at DESC"
+
+	if err := r.db.Raw(query).Scan(&transactions).Error; err != nil {
 		return transactions, err
 	}
 

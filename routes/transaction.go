@@ -19,6 +19,7 @@ func TransactionRoute(r *gin.Engine) {
 	{
 		v1.GET("/transaction", MainMiddleware, tsController.TransactionByUser)
 		v1.GET("/transaction/:category", MainMiddleware, tsController.GetAllTransByCategory)
+		v1.GET("/transaction/admin/transaction", MainMiddleware, tsController.GetAllTransactionForAdmin)
 		v1.POST("/transaction/record", MainMiddleware, tsController.NewRecord)
 		v1.POST("/transaction/buy_ro_admin", MainMiddleware, tsController.BuyROToAdmin)
 		v1.POST("/transaction/buy_sas_admin", MainMiddleware, tsController.BuySASToAdmin)

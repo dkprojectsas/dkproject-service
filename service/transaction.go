@@ -23,6 +23,7 @@ type (
 		AddBalanceAdmin(input entity.AddBalanceInput) error
 
 		GetByCategory(cat string) ([]entity.Transaction, error)
+		GetAllCategoryForAdmin() ([]entity.Transaction, error)
 	}
 
 	transService struct {
@@ -40,6 +41,10 @@ func NewTransService(tr repository.TransRepo, ur repository.UserRepository) *tra
 
 func (s *transService) GetByCategory(cat string) ([]entity.Transaction, error) {
 	return s.transRepo.GetByCategory(cat)
+}
+
+func (s *transService) GetAllCategoryForAdmin() ([]entity.Transaction, error) {
+	return s.transRepo.GetAllCatForAdmin()
 }
 
 func (s *transService) InsertNewTrans(input entity.TransInput) error {
@@ -89,6 +94,9 @@ func (s *transService) NewRecord(input entity.TransInput) error {
 		if userFrom.Role == "user" {
 			if userFrom.MoneyBalance == 0 || userFrom.MoneyBalance < input.MoneyBalance {
 				return fmt.Errorf("error transaction, balance user %v, MoneyBalance 0", input.FromId)
+			} else if userTo.Id == 1 && userTo.Role == "admin" {
+				userFrom.MoneyBalance -= input.MoneyBalance
+				input.Description = "pengiriman uang ke admin"
 			} else {
 				userFrom.MoneyBalance -= input.MoneyBalance
 
