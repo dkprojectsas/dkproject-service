@@ -166,7 +166,7 @@ func (s *userService) Register(userAddId int, reg entity.UserRegister) error {
 	newUser.ParentId = reg.ParentId
 	newUser.Position = reg.Position
 	newUser.Username = "DK"
-	newUser.Password = reg.PhoneNumber[len(reg.PhoneNumber)-4:]
+	newUser.Password = utils.RandPass(6)
 	newUser.IdGenerate = generateId
 
 	createdUser, err := s.userRepo.CreateUser(newUser)
@@ -176,7 +176,7 @@ func (s *userService) Register(userAddId int, reg entity.UserRegister) error {
 
 	splitName := strings.Split(createdUser.Fullname, " ")
 
-	createdUser.Username = fmt.Sprintf("DK-%v-%s-%s", createdUser.Id, splitName[0], utils.RandNumber(4))
+	createdUser.Username = fmt.Sprintf("DK-%v-%s", createdUser.Id, splitName[0])
 
 	err = s.userRepo.UpdateUsername(createdUser)
 	if err != nil {
@@ -222,38 +222,42 @@ func (s *userService) UpdateUserById(userId int, input entity.UserUpdateInput) e
 		return errors.New("user not found")
 	}
 
+	var change int = 0
+
 	if user.Fullname != input.Fullname {
 		user.Fullname = input.Fullname
-		user.Username = fmt.Sprintf("DK-%d-%s", user.Id, strings.Split(input.Fullname, "")[0])
+		user.Username = fmt.Sprintf("DK-%d-%s", user.Id, strings.Split(input.Fullname, " ")[0])
+		change++
 	}
 
 	if user.PhoneNumber != input.PhoneNumber {
 		log.Println("masuk edit phone number dan password")
 		user.PhoneNumber = input.PhoneNumber
-		user.Password = input.PhoneNumber[len(input.PhoneNumber)-4:]
+		change++
 	}
 
-	log.Println("edit user ke repo")
-	err = s.userRepo.UpdateUserById(user)
-	if err != nil {
-		return err
-	}
-
-	cbResp, err := s.userRepo.SendWANotification(user)
-	if err != nil {
-		return err
-	}
-
-	if cbResp.MessageID != 0 && cbResp.Status != "" && cbResp.Cost != 0 {
-		err = s.transService.InsertNewTrans(entity.TransInput{
-			FromId:       1,
-			ToId:         1,
-			MoneyBalance: cbResp.Cost,
-			Category:     entity.TransCategoryGeneral,
-			Description:  fmt.Sprintf("notifikasi whatsapp ke user: %s", input.Fullname),
-		})
+	if change > 0 {
+		err = s.userRepo.UpdateUserById(user)
 		if err != nil {
 			return err
+		}
+
+		cbResp, err := s.userRepo.SendWANotification(user)
+		if err != nil {
+			return err
+		}
+
+		if cbResp.MessageID != 0 && cbResp.Status != "" && cbResp.Cost != 0 {
+			err = s.transService.InsertNewTrans(entity.TransInput{
+				FromId:       1,
+				ToId:         1,
+				MoneyBalance: cbResp.Cost,
+				Category:     entity.TransCategoryGeneral,
+				Description:  fmt.Sprintf("notifikasi whatsapp ke user: %s", input.Fullname),
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
