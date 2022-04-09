@@ -138,7 +138,24 @@ func (r *transRepo) GetByCategory(cat string) ([]entity.Transaction, error) {
 func (r *transRepo) GetAllCatForAdmin() ([]entity.Transaction, error) {
 	var transactions []entity.Transaction
 
-	query := queryBaseTransaction + "WHERE (from_id = 1 OR to_id = 1) AND category IN ('umum', 'admin_fee') ORDER BY created_at DESC"
+	query := `
+	SELECT 
+		t.id, 
+		t.from_id, 
+		u.fullname as from_fullname,
+		t.to_id,
+		u2.fullname as to_fullname,
+		t.description, 
+		t.category, 
+		t.sas_balance, 
+		t.ro_balance, 
+		t.money_balance, 
+		t.ro_money_balance, 
+		t.created_at 
+	FROM transactions t  
+	JOIN users u ON u.id = t.from_id
+	JOIN users u2 ON u2.id = t.to_id WHERE (t.from_id = 1 OR t.to_id = 1) AND t.category IN ('umum', 'admin_fee') ORDER BY t.created_at DESC
+	`
 
 	if err := r.db.Raw(query).Scan(&transactions).Error; err != nil {
 		return transactions, err
