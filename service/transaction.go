@@ -75,9 +75,8 @@ func (s *transService) NewRecord(input entity.TransInput) error {
 			return fmt.Errorf("error transaction, balance user %v, SASBalance : 0", input.FromId)
 		} else {
 			userFrom.SASBalance -= input.SASBalance
+			userTo.SASBalance += input.SASBalance
 		}
-
-		userTo.SASBalance += input.SASBalance
 	}
 
 	if input.ROBalance != 0 {
@@ -85,9 +84,8 @@ func (s *transService) NewRecord(input entity.TransInput) error {
 			return fmt.Errorf("error transaction, balance user %v, ROBalance 0", input.FromId)
 		} else {
 			userFrom.ROBalance -= input.ROBalance
+			userTo.ROBalance += input.ROBalance
 		}
-
-		userTo.ROBalance += input.ROBalance
 	}
 
 	if input.MoneyBalance != 0 {
