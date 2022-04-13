@@ -137,26 +137,24 @@ func (s *userService) Register(userAddId int, reg entity.UserRegister) error {
 
 	var transRecords []entity.TransInput
 
-	if parentUser.Role != "admin" {
-		if parentUser.SASBalance < 1 {
-			return errors.New("unsufficient sas balance (balance tidak cukup)")
-		} else {
-			parentUser.SASBalance -= 1
-		}
-
-		err = s.userRepo.UpdateBalance(parentUser)
-		if err != nil {
-			return err
-		}
-
-		transRecords = append(transRecords, entity.TransInput{
-			FromId:      parentUser.Id,
-			ToId:        1,
-			SASBalance:  1,
-			Category:    entity.TransCategoryGeneral,
-			Description: fmt.Sprintf("pendaftaran user: %s", reg.Fullname),
-		})
+	if parentUser.SASBalance < 1 {
+		return errors.New("unsufficient sas balance (balance tidak cukup)")
+	} else {
+		parentUser.SASBalance -= 1
 	}
+
+	err = s.userRepo.UpdateBalance(parentUser)
+	if err != nil {
+		return err
+	}
+
+	transRecords = append(transRecords, entity.TransInput{
+		FromId:      parentUser.Id,
+		ToId:        1,
+		SASBalance:  1,
+		Category:    entity.TransCategoryGeneral,
+		Description: fmt.Sprintf("pendaftaran user: %s", reg.Fullname),
+	})
 
 	var newUser entity.User
 
