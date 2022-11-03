@@ -2,13 +2,13 @@ package repository
 
 import (
 	"bytes"
+	"dk-project-service/config"
 	"dk-project-service/entity"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"gorm.io/gorm"
@@ -23,6 +23,8 @@ type UserRepository interface {
 	CheckUserLogin(username string, pass string) (entity.User, error)
 
 	GetUsersByParentId(parentId string) ([]entity.User, error)
+
+	GetUserByPhoneNumber(findPhone string) (entity.User, error)
 
 	// for register repo
 	CheckUserId(id int) ([]entity.User, error)
@@ -156,14 +158,32 @@ func (r *userRepository) GetUsersByParentId(parentId string) ([]entity.User, err
 	return users, nil
 }
 
+func (r *userRepository) GetUserByPhoneNumber(findPhone string) (entity.User, error) {
+	// data sudah berbentuk 8231231343 (tanpa 0, +62, 62), pencarian menggunaka wildcard
+
+	var user entity.User
+
+	// query := `SELECT * FROM users WHERE REPLACE(phone_number, "-", "") LIKE "%` + findPhone + `"`
+
+	if err := r.db.Where("REPLACE(phone_number, '-', '') LIKE ?", "%"+findPhone).Find(&user).Error; err != nil {
+		log.Println("masuk error")
+		return user, err
+	}
+
+	log.Println("success data")
+
+	return user, nil
+}
+
 func (r *userRepository) SendWANotification(user entity.User) (entity.WASendResponse, error) {
 	var cbResp entity.WASendResponse
 
 	msgReq := fmt.Sprintf("Selamat bergabung di DK, berikut adalah username dan pin anda. Username : %s, PIN / Password : %s \n\nCatatan: ini adalah data rahasia, mohon dijaga baik baik", user.Username, user.Password)
 
+	userKey, passKey := config.GetEnvZenziva()
 	reqBody := entity.SendWABody{
-		UserKey: os.Getenv("ZENZIVA_USER_KEY"),
-		PassKey: os.Getenv("ZENZIVA_PASS_KEY"),
+		UserKey: userKey,
+		PassKey: passKey,
 		To:      user.PhoneNumber,
 		Message: msgReq,
 	}

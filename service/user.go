@@ -23,9 +23,13 @@ type UserService interface {
 	Login(login entity.UserLogin) (entity.UserLoginResponse, error)
 	Register(userAddId int, reg entity.UserRegister) error
 
+	ForgotPassword(input entity.InputForgotPass) (entity.ForgotPassResponse, error)
+
 	GetUserDownline(input string) ([]entity.User, error)
 
 	UpdateUserById(userId int, input entity.UserUpdateInput) error
+
+	UpdatePasswordById(userId int, input entity.InputChangePass) error
 }
 
 type userService struct {
@@ -210,6 +214,27 @@ func (s *userService) Register(userAddId int, reg entity.UserRegister) error {
 	return nil
 }
 
+func (s *userService) ForgotPassword(input entity.InputForgotPass) (entity.ForgotPassResponse, error) {
+	checkPhone, err := utils.CheckPhoneNumber(input.PhoneNumber)
+	if err != nil {
+		return entity.ForgotPassResponse{}, err
+	}
+
+	user, err := s.userRepo.GetUserByPhoneNumber(checkPhone)
+	if err != nil {
+		return entity.ForgotPassResponse{}, err
+	}
+
+	if user.Id == 0 && user.Fullname == "" && user.Username == "" && user.PhoneNumber == "" {
+		return entity.ForgotPassResponse{}, errors.New("error invalid data, phone number not registered")
+	}
+
+	return entity.ForgotPassResponse{
+		Username: user.Username,
+		Password: user.Password,
+	}, nil
+}
+
 func (s *userService) UpdateUserById(userId int, input entity.UserUpdateInput) error {
 	user, err := s.userRepo.GetuserId(userId)
 	if err != nil {
@@ -257,6 +282,30 @@ func (s *userService) UpdateUserById(userId int, input entity.UserUpdateInput) e
 				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+func (s *userService) UpdatePasswordById(userId int, input entity.InputChangePass) error {
+	user, err := s.userRepo.GetuserId(userId)
+	if err != nil {
+		return err
+	}
+
+	if user.Id == 0 && user.Fullname == "" && user.PhoneNumber == "" {
+		return errors.New("user not found")
+	}
+
+	if user.Password != input.OldPassword {
+		return errors.New("old password not match")
+	}
+
+	user.Password = input.Password
+
+	err = s.userRepo.UpdateUserById(user)
+	if err != nil {
+		return err
 	}
 
 	return nil

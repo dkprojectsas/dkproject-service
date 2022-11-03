@@ -4,8 +4,10 @@ type Transaction struct {
 	Id             int    `json:"id"`
 	FromId         int    `json:"from_id"`
 	FromFullname   string `json:"from_fullname"`
+	FromUsername   string `json:"from_username"`
 	ToId           int    `json:"to_id"`
 	ToFullname     string `json:"to_fullname"`
+	ToUsername     string `json:"to_username"`
 	Description    string `json:"description"`
 	Category       string `json:"category"`
 	SASBalance     int    `json:"sas_balance"`

@@ -1,14 +1,14 @@
 package auth
 
 import (
+	"dk-project-service/config"
 	"errors"
-	"os"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 var (
-	key = os.Getenv("JWT_SECRET")
+	key = config.GetEnvJWTKey()
 )
 
 type (

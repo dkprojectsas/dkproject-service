@@ -19,6 +19,12 @@ func UserRoute(r *gin.Engine) {
 	{
 		v1.POST("/users/register", MainMiddleware, userController.Register)
 		v1.POST("/users/login", userController.Login)
+
+		// forgot password
+		// will show the password correctly, when user send right the phone number
+		v1.POST("/users/forgot-password", userController.ForgetPassword)
+		v1.POST("/users/change-password", MainMiddleware, userController.ChangePassword)
+
 		v1.GET("/users", MainMiddleware, userController.GetAllUsers) // for admin
 		v1.GET("/users/by_user", MainMiddleware, userController.GetAllUsersForUserView)
 		v1.GET("/users/self", MainMiddleware, userController.GetUserId)

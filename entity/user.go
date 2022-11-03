@@ -42,6 +42,20 @@ type UserLogin struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type InputForgotPass struct {
+	PhoneNumber string `json:"phone_number" binding:"required"`
+}
+
+type InputChangePass struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+}
+
+type ForgotPassResponse struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type UserRegister struct {
 	Fullname    string `json:"fullname" binding:"required"`
 	PhoneNumber string `json:"phone_number" binding:"required"`

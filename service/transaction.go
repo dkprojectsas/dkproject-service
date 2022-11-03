@@ -3,6 +3,7 @@ package service
 import (
 	"dk-project-service/entity"
 	"dk-project-service/repository"
+	"dk-project-service/utils"
 	"errors"
 	"fmt"
 )
@@ -142,10 +143,13 @@ func (s *transService) TransactionByUser(id int) ([]entity.Transaction, error) {
 func (s *transService) NewDownline(inputUplineId int) error {
 	var uplineId = inputUplineId
 
+	// set true, if get parent_id 2, 3, and 4
+	var checkUpperId = false
+
 	for i := 0; i < 5; i++ {
 		user, err := s.userRepo.GetuserId(uplineId)
 		if err != nil {
-			fmt.Println("error inserting transaction, NewDownline, line 112")
+			utils.DebugError(err, "get user id, NewDonwline")
 			return err
 		}
 
@@ -162,7 +166,7 @@ func (s *transService) NewDownline(inputUplineId int) error {
 
 			err := s.userRepo.UpdateBalance(user)
 			if err != nil {
-				fmt.Println("error inserting transaction, NewDonwline, line 127")
+				utils.DebugError(err, "update balance, NewDonwline")
 				return err
 			}
 
@@ -176,14 +180,68 @@ func (s *transService) NewDownline(inputUplineId int) error {
 
 			err = s.transRepo.InsertTrans(transInput)
 			if err != nil {
-				fmt.Println("error inserting transaction, NewDonwline, line 139")
+				utils.DebugError(err, "inserting transaction, NewDonwline")
 				return err
 			}
 
 			uplineId = user.ParentId
+
+			if user.ParentId == 1 {
+				checkUpperId = true
+			}
 		} else {
 			break
 		}
+	}
+
+	if !checkUpperId {
+		err := s.AddBonusToUpper(uplineId)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// give bonus with 15 level, for user id 2, 3 and 4
+func (s *transService) AddBonusToUpper(startId int) error {
+	var uplineId = startId
+
+	for i := 0; i < 10; i++ {
+		user, err := s.userRepo.GetuserId(uplineId)
+		if err != nil {
+			utils.DebugError(err, " getUserId to find id upper => admin")
+			return err
+		}
+
+		if user.ParentId == 1 {
+			user.MoneyBalance += 3000
+
+			err := s.userRepo.UpdateBalance(user)
+			if err != nil {
+				utils.DebugError(err, "update balance upper id => admin")
+				return err
+			}
+
+			transInput := entity.TransInput{
+				FromId:       1,
+				ToId:         user.Id,
+				MoneyBalance: 3000,
+				Category:     entity.TransCategoryGeneral,
+				Description:  fmt.Sprintf("bonus penambahan downline baru untuk : %s", user.Fullname),
+			}
+
+			err = s.transRepo.InsertTrans(transInput)
+			if err != nil {
+				utils.DebugError(err, "inserting transaction for upper id => admin")
+				return err
+			}
+
+			break
+		}
+
+		uplineId = user.ParentId
 	}
 
 	return nil
