@@ -208,3 +208,46 @@ func (uc *userController) UpdateUserById(c *gin.Context) {
 	})
 
 }
+
+func (uc *userController) ForgetPassword(c *gin.Context) {
+	// get parameter username, phone numbe
+	var forgotPass entity.InputForgotPass
+
+	if err := c.ShouldBindJSON(&forgotPass); err != nil {
+		c.JSON(400, utils.ErrorMessages(utils.ErrorBadRequest, err))
+		return
+	}
+
+	res, err := uc.userService.ForgotPassword(forgotPass)
+	if err != nil {
+		c.JSON(500, utils.ErrorMessages(utils.ErrorInternalServer, err))
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (uc *userController) ChangePassword(c *gin.Context) {
+	user, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(401, utils.ErrorMessages(utils.ErrorUnauthorizeUser, errors.New("error user not login")))
+		return
+	}
+
+	var input entity.InputChangePass
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(400, utils.ErrorMessages(utils.ErrorBadRequest, err))
+		return
+	}
+
+	err := uc.userService.UpdatePasswordById(user.(int), input)
+	if err != nil {
+		c.JSON(500, utils.ErrorMessages(utils.ErrorInternalServer, err))
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "success update password",
+	})
+}
