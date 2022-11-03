@@ -2,6 +2,7 @@ package repository
 
 import (
 	"dk-project-service/entity"
+	"dk-project-service/utils"
 	"fmt"
 	"strconv"
 
@@ -116,9 +117,11 @@ func (r *transRepo) GetTransactionById(id int) ([]entity.Transaction, error) {
 
 	idStr := strconv.Itoa(id)
 
-	query := queryBaseTransaction + " WHERE from_id = ? OR to_id = ? ORDER BY created_at DESC"
+	_, m, y := utils.GetDateNow()
 
-	if err := r.db.Raw(query, idStr, idStr).Scan(&transactions).Error; err != nil {
+	query := queryBaseTransaction + " WHERE ( from_id = ? OR to_id = ? ) AND MONTH(created_at) = ? AND YEAR(created_at) = ? ORDER BY created_at DESC"
+
+	if err := r.db.Raw(query, idStr, idStr, m, y).Scan(&transactions).Error; err != nil {
 		return transactions, err
 	}
 
@@ -128,9 +131,11 @@ func (r *transRepo) GetTransactionById(id int) ([]entity.Transaction, error) {
 func (r *transRepo) GetByCategory(cat string) ([]entity.Transaction, error) {
 	var transactions []entity.Transaction
 
-	query := queryBaseTransaction + " WHERE category = ? ORDER BY created_at DESC"
+	_, m, y := utils.GetDateNow()
 
-	if err := r.db.Raw(query, cat).Scan(&transactions).Error; err != nil {
+	query := queryBaseTransaction + " WHERE category = ? AND MONTH(created_at) = ? AND YEAR(created_at) = ? ORDER BY created_at DESC"
+
+	if err := r.db.Raw(query, cat, m, y).Scan(&transactions).Error; err != nil {
 		return transactions, err
 	}
 
@@ -156,10 +161,16 @@ func (r *transRepo) GetAllCatForAdmin() ([]entity.Transaction, error) {
 		t.created_at 
 	FROM transactions t  
 	JOIN users u ON u.id = t.from_id
-	JOIN users u2 ON u2.id = t.to_id WHERE (t.from_id = 1 OR t.to_id = 1) AND t.category IN ('umum', 'admin_fee') ORDER BY t.created_at DESC
+	JOIN users u2 ON u2.id = t.to_id 
+	WHERE (t.from_id = 1 OR t.to_id = 1)
+	 	AND t.category IN ('umum', 'admin_fee') 
+		AND MONTH(created_at) = ? 
+		AND YEAR(created_at) = ?
+	ORDER BY t.created_at DESC
 	`
 
-	if err := r.db.Raw(query).Scan(&transactions).Error; err != nil {
+	_, m, y := utils.GetDateNow()
+	if err := r.db.Raw(query, m, y).Scan(&transactions).Error; err != nil {
 		return transactions, err
 	}
 

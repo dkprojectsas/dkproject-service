@@ -39,3 +39,14 @@ func CountRangeDate() (string, string, error) {
 		return startDateStr, endDateStr, err
 	}
 }
+
+func GetDateNow() (day, month, year int) {
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+	timeLocal := time.Now().In(loc)
+
+	day = timeLocal.Day()
+	month = int(timeLocal.Month())
+	year = timeLocal.Year()
+
+	return day, month, year
+}
