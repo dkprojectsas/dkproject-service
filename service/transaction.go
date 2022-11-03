@@ -208,7 +208,7 @@ func (s *transService) NewDownline(inputUplineId int) error {
 func (s *transService) AddBonusToUpper(startId int) error {
 	var uplineId = startId
 
-	for i := 0; i < 10; i++ {
+	for {
 		user, err := s.userRepo.GetuserId(uplineId)
 		if err != nil {
 			utils.DebugError(err, " getUserId to find id upper => admin")
@@ -238,6 +238,8 @@ func (s *transService) AddBonusToUpper(startId int) error {
 				return err
 			}
 
+			break
+		} else if user.Id == 1 || user.ParentId == 0 {
 			break
 		}
 
