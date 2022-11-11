@@ -150,8 +150,10 @@ func (r *transRepo) GetAllCatForAdmin() ([]entity.Transaction, error) {
 		t.id, 
 		t.from_id, 
 		u.fullname as from_fullname,
+		u.username as from_username,
 		t.to_id,
 		u2.fullname as to_fullname,
+		u2.username as to_username,
 		t.description, 
 		t.category, 
 		t.sas_balance, 
@@ -163,7 +165,7 @@ func (r *transRepo) GetAllCatForAdmin() ([]entity.Transaction, error) {
 	JOIN users u ON u.id = t.from_id
 	JOIN users u2 ON u2.id = t.to_id 
 	WHERE (t.from_id = 1 OR t.to_id = 1)
-	 	AND t.category IN ('umum', 'admin_fee') 
+	 	AND ( t.category IN ('admin_fee', 'sas_balance', 'ro_balance') OR (t.category = 'umum' AND t.description NOT LIKE 'bonus %'))
 		AND MONTH(created_at) = ? 
 		AND YEAR(created_at) = ?
 	ORDER BY t.created_at DESC
