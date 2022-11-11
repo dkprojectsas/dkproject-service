@@ -3,6 +3,7 @@ package service
 import (
 	"dk-project-service/entity"
 	"dk-project-service/repository"
+	"fmt"
 	"log"
 	"strconv"
 )
@@ -57,6 +58,7 @@ func (s *wdService) ApproveWdReq(id string, input entity.UpdateWdReqApprove) err
 	newTrans := entity.TransInput{
 		FromId:       1,
 		ToId:         user.Id,
+		Description:  fmt.Sprintf("Penarikan RO dari user: %s", user.Username),
 		SASBalance:   0,
 		ROBalance:    0,
 		MoneyBalance: wdReq.RoMoneyBalance,
