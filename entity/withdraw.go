@@ -59,7 +59,7 @@ type UpdateWdReqApprove struct {
 const (
 	BonusUser     = 2000
 	BonusJaringan = 3000
-	BiayaAdmin    = 300
+	BiayaAdmin    = 500
 )
 
 const ParseFormat = "2006-01-02 15:04:05"
