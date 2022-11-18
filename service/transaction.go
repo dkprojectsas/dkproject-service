@@ -110,7 +110,6 @@ func (s *transService) NewRecord(input entity.TransInput) error {
 		}
 
 		userTo.MoneyBalance += (input.MoneyBalance - entity.BiayaAdmin)
-
 	}
 
 	err = s.userRepo.UpdateBalance(userFrom)
